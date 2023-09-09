@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+    sharp-vids:
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+        volumes:
+        # TODO: Linux/MacOS versions for the mounts
+        # Mounts the hosts user secrets
+           - $APPDATA\Microsoft\UserSecrets\af89a36d-0f69-47a1-9055-c9c663263bb7\:/root/.microsoft/usersecrets/af89a36d-0f69-47a1-9055-c9c663263bb7:ro
+        # TODO: Add documentation for how to set up dev-certs for convienence
+        # Mounts the hosts development certifications
+           - $APPDATA\ASP.NET\Https\:/root/.aspnet/https:ro
+
+    adminer:
+        image: adminer
+        container_name: adminer_container
+        ports:
+            - 8080:8080

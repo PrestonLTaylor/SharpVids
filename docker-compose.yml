@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+    sharp-vids:
+        build:
+            context: .
+            dockerfile: SharpVids/dockerfile
+        container_name: sharp-vids-container
+        ports:
+            - 80:80
+            - 443:443
+        environment:
+            ASPNETCORE_URLS: http://+:80;https://+:443
+
+    postgres-db:
+        image: postgres
+        container_name: postgres-container
+        volumes:
+            - db-data:/var/lib/postgres/data
+        environment:
+            # TODO: Use POSTGRES_PASSWORD_FILE instead, so we don't have to have our user and password here
+            POSTGRES_PASSWORD: temppw 
+
+volumes:
+    db-data:
