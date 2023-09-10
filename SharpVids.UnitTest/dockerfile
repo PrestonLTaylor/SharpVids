@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS restore 
+WORKDIR /src
+COPY ["SharpVids/SharpVids.csproj", "SharpVids/"]
+COPY ["SharpVids.UnitTest/SharpVids.UnitTest.csproj", "SharpVids.UnitTest/"]
+RUN dotnet restore "SharpVids.UnitTest/SharpVids.UnitTest.csproj"
+
+FROM restore AS build
+COPY . .
+WORKDIR "/src/SharpVids.UnitTest"
+RUN dotnet build "SharpVids.UnitTest.csproj" -c Release -o app/build
+
+# TODO: Investigate if we can use a smaller final image than "dotnet/sdk" as it causes a large final image to be built
+FROM build AS final
+ENTRYPOINT ["dotnet", "test", "SharpVids.UnitTest.csproj", "-c", "Release"]

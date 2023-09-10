@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpVids", "SharpVids\Shar
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{AFEFAE88-EEBF-4610-B432-EB1920A411A2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpVids.UnitTest", "SharpVids.UnitTest\SharpVids.UnitTest.csproj", "{3C7497C8-5FE0-4312-82F0-817DD3F39FA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{AFEFAE88-EEBF-4610-B432-EB1920A411A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFEFAE88-EEBF-4610-B432-EB1920A411A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFEFAE88-EEBF-4610-B432-EB1920A411A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C7497C8-5FE0-4312-82F0-817DD3F39FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C7497C8-5FE0-4312-82F0-817DD3F39FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C7497C8-5FE0-4312-82F0-817DD3F39FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C7497C8-5FE0-4312-82F0-817DD3F39FA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
