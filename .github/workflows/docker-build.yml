@@ -1,0 +1,23 @@
+name: Build using Docker
+
+on:
+  push:
+  pull_request:
+    paths:
+    - '**.cs'
+    - '**.csproj'
+    - '**.cshtml'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest ]
+    
+    runs-on: ${{ matrix.os }}
+
+# TODO: Build using our compose file instead, but it's a bit heavy to do right now (caching?)
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the docker image
+      run: docker build . --file ./SharpVids/dockerfile --tag ci-build:$(date +%s)
