@@ -13,7 +13,11 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+	await app.SeedDatabaseAsync();
+}
+else
 {
 	app.UseExceptionHandler("/Home/Error");
 	app.UseHsts();
