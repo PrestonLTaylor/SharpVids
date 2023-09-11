@@ -1,5 +1,6 @@
 ﻿using Bogus;
 using Microsoft.AspNetCore.Identity;
+using SharpVids.Data.Generators;
 using SharpVids.Models;
 
 namespace SharpVids.Data;
@@ -28,18 +29,11 @@ public static class DatabaseSeeding
 	{
 		if (databaseContext.Users.Any()) return;
 
-		var userFaker = new Faker<UserModel>()
-			.RuleFor(u => u.Id, f => Guid.NewGuid())
-			.RuleFor(u => u.UserName, f => f.Internet.UserName())
-			.RuleFor(u => u.Email, f => f.Internet.Email())
-			.RuleFor(u => u.ProfilePictureUrl, f => f.Image.PicsumUrl(80, 80))
-			.RuleFor(u => u.RegistrationDate, f => f.Date.PastOffset().UtcDateTime);
-
-		const int numberOfUsers = 100;
-		const string fakePassword = "Password12/";
-		for (int i = 0; i < numberOfUsers; ++i)
+		var fakeUserGenerator = new FakeUserGenerator();
+		var fakeUsers = fakeUserGenerator.GenerateForever().Take(100);
+		foreach (var fakeUser in fakeUsers)
 		{
-			var fakeUser = userFaker.Generate();
+			const string fakePassword = "Password12/";
 			await userManager.CreateAsync(fakeUser, fakePassword);
 		}
 	}
