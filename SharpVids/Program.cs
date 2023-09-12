@@ -1,10 +1,12 @@
 using SharpVids.Data;
+using SharpVids.Data.Repositories;
 using SharpVids.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddDefaultIdentity<UserModel>().AddEntityFrameworkStores<DatabaseContext>();
+builder.Services.AddRepositories();
 
 builder.Services.AddControllersWithViews();
 
