@@ -15,7 +15,8 @@ public sealed class VideoModel
 	public required string Title { get; set; }
 	public required string Description { get; set; }
 	public required DateTimeOffset UploadDate { get; set; }
-	
+
+	[Url]
 	public required string ThumbnailUrl { get; set; }
 
 	public required List<byte> VideoBytes { get; set; }
