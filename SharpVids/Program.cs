@@ -1,5 +1,6 @@
 using SharpVids.Data;
 using SharpVids.Data.Repositories;
+using SharpVids.Installers;
 using SharpVids.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddDefaultIdentity<UserModel>().AddEntityFrameworkStores<DatabaseContext>();
 builder.Services.AddRepositories();
+builder.Services.AddMultipartFormDataParserFactory();
 
 builder.Services.AddControllersWithViews();
 
