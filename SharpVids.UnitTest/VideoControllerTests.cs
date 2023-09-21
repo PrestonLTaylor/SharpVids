@@ -46,6 +46,23 @@ internal sealed class VideoControllerTests
 	}
 
 	[Test]
+	public async Task Videos_ReturnsEveryUploadedVideo()
+	{
+		// Arrange
+		var fakeVideos = GenerateFakeVideos();
+		_videoRepositoryMock.Setup(r => r.GetVideosAsync()).ReturnsAsync(fakeVideos);
+
+		// Act
+		var videoController = new VideoController(_userRepositoryMock.Object, _videoRepositoryMock.Object, _multipartFormDataParserFactoryMock.Object);
+		var viewResult = await videoController.Videos() as ViewResult;
+		var result = viewResult?.Model as List<VideoModel>;
+
+		// Assert
+		Assert.That(result, Is.Not.Null);
+		Assert.That(result, Has.Count.EqualTo(fakeVideos.Count));
+	}
+
+	[Test]
     public void Upload_AlwaysReturnsViewResult()
     {
         // Arrange

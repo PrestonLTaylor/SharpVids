@@ -33,6 +33,12 @@ public sealed class VideoController : Controller
         return View(video);
     }
 
+    public async Task<IActionResult> Videos()
+    {
+        var videos = await _videoRepository.GetVideosAsync();
+        return View(videos);
+    }
+
     [Authorize]
     [GenerateAntiforgeryTokenCookie]
     public IActionResult Upload()
