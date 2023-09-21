@@ -14,6 +14,38 @@ namespace SharpVids.UnitTest;
 internal sealed class VideoControllerTests
 {
     [Test]
+    public async Task Video_ReturnsNotFound_WhenSuppliedInvalidId()
+    {
+        // Arrange
+        _videoRepositoryMock.Setup(m => m.GetVideoByIdAsync(It.IsAny<Guid>())).ReturnsAsync((VideoModel?)null);
+
+		// Act
+		var videoController = new VideoController(_userRepositoryMock.Object, _videoRepositoryMock.Object, _multipartFormDataParserFactoryMock.Object);
+		var result = await videoController.Video(Guid.NewGuid()) as NotFoundResult;
+
+		// Assert
+		Assert.That(result, Is.Not.Null);
+	}
+
+	[Test]
+	public async Task Video_ReturnsSpecifiedVideo_WhenProvidedId()
+	{
+        // Arrange
+        var fakeVideos = GenerateFakeVideos();
+        var specificVideo = fakeVideos.First();
+		_videoRepositoryMock.Setup(m => m.GetVideoByIdAsync(specificVideo.Id)).ReturnsAsync(specificVideo);
+
+		// Act
+		var videoController = new VideoController(_userRepositoryMock.Object, _videoRepositoryMock.Object, _multipartFormDataParserFactoryMock.Object);
+		var viewResult = await videoController.Video(specificVideo.Id) as ViewResult;
+        var result = viewResult?.Model as VideoModel;
+
+		// Assert
+		Assert.That(result, Is.Not.Null);
+		Assert.That(result.Id, Is.EqualTo(specificVideo.Id));
+	}
+
+	[Test]
     public void Upload_AlwaysReturnsViewResult()
     {
         // Arrange
@@ -104,13 +136,11 @@ internal sealed class VideoControllerTests
         var videoController = new VideoController(_userRepositoryMock.Object, _videoRepositoryMock.Object, _multipartFormDataParserFactoryMock.Object);
         videoController.ControllerContext.HttpContext = httpContextMock.Object;
         var result = await videoController.SubmitUpload() as CreatedAtActionResult;
-        var videoModel = result?.Value as VideoModel;
 
         // Assert
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.Not.Null);
-            Assert.That(videoModel, Is.Not.Null);
             _videoRepositoryMock.VerifyAll();
         });
     }
@@ -143,6 +173,13 @@ internal sealed class VideoControllerTests
         httpContextMock.Setup(m => m.Request).Returns(httpRequestMock.Object);
         return httpContextMock;
     }
+
+    private List<VideoModel> GenerateFakeVideos()
+    {
+		FakeVideoGenerator fakeVideoGenerator = new();
+		int numberOfVideos = Random.Shared.Next(1, 100);
+		return fakeVideoGenerator.GenerateForever().Take(numberOfVideos).ToList();
+	}
 
     private UserModel GenerateFakeUser()
     {

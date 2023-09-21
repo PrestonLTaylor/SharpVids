@@ -21,6 +21,18 @@ public sealed class VideoController : Controller
         _multipartFormDataParserFactory = multipartFormDataParserFactory;
     }
 
+	// TODO: Retrieving videos causes the whole video file to be loaded, making this slow, optimize this later!
+	public async Task<IActionResult> Video([FromRoute]Guid id)
+    {
+        var video = await _videoRepository.GetVideoByIdAsync(id);
+        if (video is null)
+        {
+            return NotFound();
+        }
+
+        return View(video);
+    }
+
     [Authorize]
     [GenerateAntiforgeryTokenCookie]
     public IActionResult Upload()
@@ -59,8 +71,7 @@ public sealed class VideoController : Controller
         var videoModel = await CreateVideoForCurrentUserAsync(title, description, thumbnailUrl, fileData);
         await _videoRepository.AddVideoAsync(videoModel);
 
-        // TODO: Replace Upload with a controller action for viewing a specific video
-        return CreatedAtAction(nameof(Upload), videoModel);
+        return CreatedAtAction(nameof(Video), videoModel.Id, null);
     }
 
     private Dictionary<string, string> CreateReceivingParameterNameToDataDictionary(IStreamingMultipartFormDataParser parser)
