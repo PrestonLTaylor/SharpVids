@@ -5,7 +5,7 @@ using SharpVids.Data.Generators;
 using SharpVids.Data.Repositories;
 using SharpVids.Models;
 
-namespace SharpVids.Test;
+namespace SharpVids.UnitTest;
 
 internal sealed class UserControllerTests
 {
