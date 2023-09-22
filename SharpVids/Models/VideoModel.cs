@@ -6,11 +6,11 @@ namespace SharpVids.Models;
 public sealed class VideoModel
 {
 	[Key]
-	public Guid Id { get; set; }
+	public required Guid Id { get; set; }
 
 	[ForeignKey(nameof(Creator))]
-	public Guid CreatorId { get; set; }
-	public required UserModel Creator {  get; set; }
+	public required Guid CreatorId { get; set; }
+	public UserModel Creator {  get; set; }
 
 	public required string Title { get; set; }
 	public required string Description { get; set; }
@@ -21,5 +21,5 @@ public sealed class VideoModel
 
 	public required List<byte> VideoBytes { get; set; }
 
-	public required List<CommentModel> Comments { get; set; }
+	public List<CommentModel> Comments { get; set; }
 }

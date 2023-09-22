@@ -1,0 +1,28 @@
+﻿@model List<VideoModel>
+@{
+	ViewData["Title"] = "Videos";
+}
+
+<h1>Videos</h1>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Title</th>
+			<th>Id</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var video in Model)
+		{
+			<tr>
+				<td class="align-middle">
+					<a asp-area="" asp-controller="Video" asp-action="Video" asp-route-id="@video.Id">@Html.DisplayFor(_ => video.Title)</a>
+				</td>
+				<td class="align-middle">
+					<p>@Html.DisplayFor(_ => video.Id)</p>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

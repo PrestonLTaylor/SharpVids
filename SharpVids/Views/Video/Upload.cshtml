@@ -1,0 +1,77 @@
+﻿@model VideoModel
+@{
+    ViewData["Title"] = "Upload";
+}
+
+<h2>Upload your video!</h2>
+
+<form enctype="multipart/form-data" action="Upload" method="post" onsubmit="Submit(this);">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Title" class="form-control" aria-required="true" placeholder="title" />
+        <label asp-for="Title" class="form-label">Title</label>
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    
+    <div class="form-floating mb-3">
+        <input asp-for="Description" class="form-control" aria-required="true" placeholder="description" />
+        <label asp-for="Description" class="form-label">Description</label>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="ThumbnailUrl" class="form-control" aria-required="true" placeholder="thumbnail" />
+        <label asp-for="ThumbnailUrl" class="form-label">Thumbnail</label>
+        <span asp-validation-for="ThumbnailUrl" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="VideoBytes" class="form-label mb-3">Select your video</label>
+        <input asp-for="VideoBytes" class="form-control" aria-required="true" type="file" accept="video/*" />
+        <span asp-validation-for="VideoBytes" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Upload</button>
+</form>
+
+@section Scripts 
+{
+    <script>
+        "use script";
+
+        async function Submit(formElement) 
+        {
+            try
+            {
+                await PostFormData(formElement);
+            }
+            catch (error)
+            {
+                console.error("Unable to send form data: ", error);
+            }
+        }
+
+        async function PostFormData(formElement)
+        {
+            const formData = new FormData(formElement);
+            const response = await fetch(formElement.action, 
+            {
+                method: "POST",
+                headers: {
+                    'RequestVerificationToken': GetRequestVerificationToken()
+                },
+                body: formData
+            });
+
+            console.log(`Result: ${response.status} ${reponse.statusText}`);
+        }
+
+        function GetRequestVerificationToken()
+        {
+            let value = `; ${document.cookie}`;
+            let parts = value.split("; RequestVerificationToken=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+    </script>
+}
