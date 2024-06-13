@@ -6,7 +6,7 @@
     <h1>Upload Your Video!</h1>
 
     <label for="video-upload">Video: </label>
-    <InputFile id="video-upload" OnChange="OnFileChanged" />
+    <InputFile id="video-upload" OnChange="OnFileChanged" accept="video/*" />
 
     <button class="btn btn-outline-secondary" @onclick="UploadVideoAsync">Upload</button>
     <small class="text-muted">Video cannot exceed @(uploadOptions.CurrentValue.FileSizeLimitInMB)MB</small>
@@ -43,7 +43,13 @@
         if (videoFileToUpload.Size > FileSizeLimitInBytes)
         {
             var videoFileInMb = videoFileToUpload.Size / (float)MB;
-            errors.Add($"Attempted to upload a video of size {videoFileInMb.ToString("N2")}MB however only videos smaller than {uploadOptions.CurrentValue.FileSizeLimitInMB}MB are allowed.");
+            errors.Add($"Attempted to upload a video of size {videoFileInMb.ToString("N2")}MB however, only videos smaller than {uploadOptions.CurrentValue.FileSizeLimitInMB}MB are allowed.");
+            return;
+        }
+
+        if (!IsVideoMimeType(videoFileToUpload.ContentType))
+        {
+            errors.Add($"Attempted to upload a non-video file, only video files are allowed.");
             return;
         }
 
@@ -62,6 +68,11 @@
     {
         errors.Clear();
         UploadedBytes = 0;
+    }
+
+    private static bool IsVideoMimeType(string mimeType)
+    {
+        return mimeType.StartsWith("video/"); 
     }
 
     private async Task TryToReadVideoFromStreamAsync()
