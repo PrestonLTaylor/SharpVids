@@ -1,4 +1,5 @@
 ﻿@page "/upload"
+@inject IOptionsMonitor<UploadOptions> uploadOptions
 @rendermode InteractiveServer
 
 <article>
@@ -8,7 +9,10 @@
     <InputFile id="video-upload" OnChange="OnFileChanged" />
 
     <button class="btn btn-outline-secondary" @onclick="UploadVideoAsync">Upload</button>
+    <small class="text-muted">Video cannot exceed @(uploadOptions.CurrentValue.FileSizeLimitInMB)MB</small>
 </article>
+
+<h4>Upload Progress: @GetMbRemainingToUpload()MB Remaining (@GetCurrentVideoUploadPercentage()%)</h4>
 
 @if (errors.Count > 0)
 {
@@ -23,17 +27,25 @@
     </section>
 }
 
-<h4>Upload Progress: @GetMbRemainingToUpload()MB Remaining (@GetCurrentVideoUploadPercentage()%)</h4>
-
 @code {
     private void OnFileChanged(InputFileChangeEventArgs fileChange)
     {
+        ResetUploadState();
         videoFileToUpload = fileChange.File;
     }
 
     private async Task UploadVideoAsync()
     {
         ResetUploadState();
+
+        if (videoFileToUpload is null) return;
+
+        if (videoFileToUpload.Size > FileSizeLimitInBytes)
+        {
+            var videoFileInMb = videoFileToUpload.Size / (float)MB;
+            errors.Add($"Attempted to upload a video of size {videoFileInMb.ToString("N2")}MB however only videos smaller than {uploadOptions.CurrentValue.FileSizeLimitInMB}MB are allowed.");
+            return;
+        }
 
         try
         {
@@ -60,7 +72,7 @@
 
         // FIXME: Upload to a NoSQL database to be encoded
         // FIXME: Allow a user to cancel an upload using cancellation tokens
-        using var videoStream = videoFileToUpload.OpenReadStream(50 * MB);
+        using var videoStream = videoFileToUpload.OpenReadStream(FileSizeLimitInBytes);
         while (UploadedBytes != videoFileToUpload.Size)
         {
             await videoStream.ReadAsync(videoBytes.Slice((int)videoStream.Position));
@@ -85,8 +97,8 @@
     }
 
     const int MB = 1024 * 1024;
+    private int FileSizeLimitInBytes => uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
 
-    // FIXME: Implement a file size limitation and display it to the user (IOptionsMonitor<VideoUploadingOptions>)
     // FIXME: Implement other client-side validation for the file to upload
     private IBrowserFile? videoFileToUpload;
     private List<string> errors = [];

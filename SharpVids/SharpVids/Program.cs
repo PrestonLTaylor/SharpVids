@@ -1,10 +1,13 @@
 using SharpVids.Components;
+using SharpVids.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.Configure<UploadOptions>(builder.Configuration.GetSection(UploadOptions.Section));
 
 var app = builder.Build();
 
