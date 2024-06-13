@@ -1,0 +1,109 @@
+﻿@page "/upload"
+@rendermode InteractiveServer
+
+<article>
+    <h1>Upload Your Video!</h1>
+
+    <label for="video-upload">Video: </label>
+    <InputFile id="video-upload" OnChange="OnFileChanged" />
+
+    <button class="btn btn-outline-secondary" @onclick="UploadVideoAsync">Upload</button>
+</article>
+
+@if (errors.Count > 0)
+{
+    <section>
+        <h4>There were some errors trying to upload your video:</h4>
+        <ul>
+            @foreach (var error in errors)
+            {
+                <li><p class="alert-danger">@error</p></li>
+            }
+        </ul>
+    </section>
+}
+
+<h4>Upload Progress: @GetMbRemainingToUpload()MB Remaining (@GetCurrentVideoUploadPercentage()%)</h4>
+
+@code {
+    private void OnFileChanged(InputFileChangeEventArgs fileChange)
+    {
+        videoFileToUpload = fileChange.File;
+    }
+
+    private async Task UploadVideoAsync()
+    {
+        ResetUploadState();
+
+        try
+        {
+            await TryToReadVideoFromStreamAsync();
+        }
+        catch (Exception ex)
+        {
+            // FIXME: Catch specific exceptions and report human readable error messages
+            errors.Add(ex.Message);
+        }
+    }
+
+    private void ResetUploadState()
+    {
+        errors.Clear();
+        UploadedBytes = 0;
+    }
+
+    private async Task TryToReadVideoFromStreamAsync()
+    {
+        if (videoFileToUpload is null) return;
+
+        videoBytes = new byte[videoFileToUpload.Size];
+
+        // FIXME: Upload to a NoSQL database to be encoded
+        // FIXME: Allow a user to cancel an upload using cancellation tokens
+        using var videoStream = videoFileToUpload.OpenReadStream(50 * MB);
+        while (UploadedBytes != videoFileToUpload.Size)
+        {
+            await videoStream.ReadAsync(videoBytes.Slice((int)videoStream.Position));
+            UploadedBytes = videoStream.Position;
+        }
+    }
+
+    private string GetMbRemainingToUpload()
+    {
+        var diffInBytes = VideoFileSize - UploadedBytes;
+        var mbRemaining = diffInBytes / (float)MB;
+        return mbRemaining.ToString("N2");
+    }
+
+    private string GetCurrentVideoUploadPercentage()
+    {
+        if (VideoFileSize == 0) return "0.00";
+
+        var currentCompleted = UploadedBytes / (float)VideoFileSize;
+        var uploadPercentage = currentCompleted * 100;
+        return uploadPercentage.ToString("N2");
+    }
+
+    const int MB = 1024 * 1024;
+
+    // FIXME: Implement a file size limitation and display it to the user (IOptionsMonitor<VideoUploadingOptions>)
+    // FIXME: Implement other client-side validation for the file to upload
+    private IBrowserFile? videoFileToUpload;
+    private List<string> errors = [];
+    private Memory<byte> videoBytes = new();
+
+    private long _uploadedBytes = 0;
+    private long UploadedBytes
+    {
+        get => _uploadedBytes;
+        set
+        {
+            _uploadedBytes = value;
+            StateHasChanged();
+        }
+    }
+    private long VideoFileSize
+    {
+        get => videoBytes.Length;
+    }
+}
