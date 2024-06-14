@@ -1,0 +1,12 @@
+name: sharp-vids-compose-stack
+
+services:
+  sharpvids-front-end:
+    container_name: sharpvids-front-end-container
+    image: sharpvids-front-end
+    build:
+      context: ../.
+      dockerfile: SharpVids/SharpVids/Dockerfile
+    ports:
+      - 5000:5000
+      - 5001:5001
