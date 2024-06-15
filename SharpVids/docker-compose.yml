@@ -10,3 +10,12 @@ services:
     ports:
       - 5000:5000
       - 5001:5001
+
+  raw-video-store:
+    container_name: raw-video-store-container
+    image: mongo:8.0-rc
+    restart: always
+    environment:
+      # FIXME: Implement proper secrets for these values
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
