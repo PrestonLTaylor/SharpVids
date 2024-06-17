@@ -1,5 +1,6 @@
 ﻿@page "/upload"
 @inject IOptionsMonitor<UploadOptions> uploadOptions
+@inject IRawVideoDbService dbService
 @rendermode InteractiveServer
 
 <article>
@@ -55,7 +56,7 @@
 
         try
         {
-            await TryToReadVideoFromStreamAsync();
+            await TryToUploadRawVideoFromUserAsync();
         }
         catch (Exception ex)
         {
@@ -67,7 +68,7 @@
     private void ResetUploadState()
     {
         errors.Clear();
-        UploadedBytes = 0;
+        NumberOfUploadedByte = 0;
     }
 
     private static bool IsVideoMimeType(string mimeType)
@@ -75,25 +76,16 @@
         return mimeType.StartsWith("video/"); 
     }
 
-    private async Task TryToReadVideoFromStreamAsync()
+    private async Task TryToUploadRawVideoFromUserAsync()
     {
-        if (videoFileToUpload is null) return;
-
-        videoBytes = new byte[videoFileToUpload.Size];
-
-        // FIXME: Upload to a NoSQL database to be encoded
         // FIXME: Allow a user to cancel an upload using cancellation tokens
-        using var videoStream = videoFileToUpload.OpenReadStream(FileSizeLimitInBytes);
-        while (UploadedBytes != videoFileToUpload.Size)
-        {
-            await videoStream.ReadAsync(videoBytes.Slice((int)videoStream.Position));
-            UploadedBytes = videoStream.Position;
-        }
+        var videoId = await dbService.UploadRawVideoAsync(videoFileToUpload!,
+            (numberOfUploadedBytes) => NumberOfUploadedByte = numberOfUploadedBytes);
     }
 
     private string GetMbRemainingToUpload()
     {
-        var diffInBytes = VideoFileSize - UploadedBytes;
+        var diffInBytes = VideoFileSize - NumberOfUploadedByte;
         var mbRemaining = diffInBytes / (float)MB;
         return mbRemaining.ToString("N2");
     }
@@ -102,7 +94,7 @@
     {
         if (VideoFileSize == 0) return "0.00";
 
-        var currentCompleted = UploadedBytes / (float)VideoFileSize;
+        var currentCompleted = NumberOfUploadedByte / (float)VideoFileSize;
         var uploadPercentage = currentCompleted * 100;
         return uploadPercentage.ToString("N2");
     }
@@ -112,20 +104,19 @@
 
     private IBrowserFile? videoFileToUpload;
     private List<string> errors = [];
-    private Memory<byte> videoBytes = new();
 
-    private long _uploadedBytes = 0;
-    private long UploadedBytes
+    private long _numberOfUploadedBytes = 0;
+    private long NumberOfUploadedByte
     {
-        get => _uploadedBytes;
+        get => _numberOfUploadedBytes;
         set
         {
-            _uploadedBytes = value;
+            _numberOfUploadedBytes = value;
             StateHasChanged();
         }
     }
     private long VideoFileSize
     {
-        get => videoBytes.Length;
+        get => videoFileToUpload?.Size ?? 0;
     }
 }

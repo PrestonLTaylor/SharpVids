@@ -1,6 +1,7 @@
 using SharpVids.Components;
 using SharpVids.Data;
 using SharpVids.Options;
+using SharpVids.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddRawVideoDb();
+builder.Services.AddSharpVidsServices();
 
 builder.Services.Configure<UploadOptions>(builder.Configuration.GetSection(UploadOptions.Section));
 
