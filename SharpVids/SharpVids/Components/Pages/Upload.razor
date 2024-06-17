@@ -110,7 +110,6 @@
     const int MB = 1024 * 1024;
     private int FileSizeLimitInBytes => uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
 
-    // FIXME: Implement other client-side validation for the file to upload
     private IBrowserFile? videoFileToUpload;
     private List<string> errors = [];
     private Memory<byte> videoBytes = new();
