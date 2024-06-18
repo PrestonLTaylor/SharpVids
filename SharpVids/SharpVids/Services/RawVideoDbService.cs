@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using SharpVids.Data;
 using Microsoft.Extensions.Options;
 using SharpVids.Options;
+using SharpVids.Models;
 
 namespace SharpVids.Services;
 
@@ -20,12 +21,7 @@ public sealed class RawVideoDbService : IRawVideoDbService
         _uploadOptions = uploadOptions;
     }
 
-    /// <summary>
-    /// Uploads a raw video to our raw video database.
-    /// </summary>
-    /// <param name="videoFile">The <see cref="IBrowserFile"/> a user is trying to upload.</param>
-    /// <param name="updateCallback">A callback that is called when the number of bytes uploaded has changed.</param>
-    /// <returns>An <see cref="ObjectId"/> used to reference the video file inside of our database.</returns>
+    /// <inheritdoc/>
     public async Task<ObjectId> UploadRawVideoAsync(IBrowserFile videoFile, Action<long> updateCallback)
     {
         var videoId = ObjectId.GenerateNewId();
@@ -51,9 +47,21 @@ public sealed class RawVideoDbService : IRawVideoDbService
         return videoId;
     }
 
-    private IMongoDatabase GetRawVideoDatabase()
+    /// <inheritdoc/>
+    public async Task AddVideoMetadataAsync(ObjectId videoId)
     {
-        return _dbClient.Client.GetDatabase(RAW_VIDEO_DB_NAME);
+        _logger.LogInformation("Creating a video metadata document with the id {VideoId}", videoId);
+
+        var collection = GetRawVideoMetadataCollection();
+
+        var metadata = new RawVideoMetadataModel { VideoId = videoId };
+        await collection.InsertOneAsync(metadata);
+    }
+
+    private IMongoCollection<RawVideoMetadataModel> GetRawVideoMetadataCollection()
+    {
+        var db = GetRawVideoDatabase();
+        return db.GetCollection<RawVideoMetadataModel>(RAW_VIDEO_METADATA_COLLECTION_NAME);
     }
 
     private GridFSBucket GetRawVideosBucket()
@@ -62,7 +70,13 @@ public sealed class RawVideoDbService : IRawVideoDbService
         return new GridFSBucket(db);
     }
 
+    private IMongoDatabase GetRawVideoDatabase()
+    {
+        return _dbClient.Client.GetDatabase(RAW_VIDEO_DB_NAME);
+    }
+
     const string RAW_VIDEO_DB_NAME = "raw-videos";
+    const string RAW_VIDEO_METADATA_COLLECTION_NAME = "raw-video-metadata";
     const int KB = 1024;
     const int MB = 1024 * 1024;
     const int UPLOAD_BUFFER_SIZE = 80 * KB;

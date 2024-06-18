@@ -79,8 +79,11 @@
     private async Task TryToUploadRawVideoFromUserAsync()
     {
         // FIXME: Allow a user to cancel an upload using cancellation tokens
+        // FIXME: Implement a replica set for our mongodb database so we can use transactions
         var videoId = await dbService.UploadRawVideoAsync(videoFileToUpload!,
             (numberOfUploadedBytes) => NumberOfUploadedByte = numberOfUploadedBytes);
+
+        await dbService.AddVideoMetadataAsync(videoId);
     }
 
     private string GetMbRemainingToUpload()
