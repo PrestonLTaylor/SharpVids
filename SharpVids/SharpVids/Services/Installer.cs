@@ -6,6 +6,8 @@ public static class Installer
     {
         services.AddTransient<IRawVideoDbService, RawVideoDbService>();
 
+        services.AddTransient<IUploadService, UploadService>();
+
         return services;
     }
 }
