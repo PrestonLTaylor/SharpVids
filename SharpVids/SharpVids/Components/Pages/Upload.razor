@@ -1,26 +1,26 @@
 ﻿@page "/upload"
 @inject IOptionsMonitor<UploadOptions> uploadOptions
-@inject IRawVideoDbService dbService
+@inject IUploadService uploadService
 @rendermode InteractiveServer
 
 <article>
     <h1>Upload Your Video!</h1>
 
     <label for="video-upload">Video: </label>
-    <InputFile id="video-upload" OnChange="OnFileChanged" accept="video/*" />
+    <InputFile id="video-upload" OnChange="uploadService.OnFileChanged" accept="video/*" />
 
-    <button class="btn btn-outline-secondary" @onclick="UploadVideoAsync">Upload</button>
+    <button class="btn btn-outline-secondary" @onclick="() => uploadService.TryToUploadVideoAsync(OnUploadProgress)">Upload</button>
     <small class="text-muted">Video cannot exceed @(uploadOptions.CurrentValue.FileSizeLimitInMB)MB</small>
 </article>
 
 <h4>Upload Progress: @GetMbRemainingToUpload()MB Remaining (@GetCurrentVideoUploadPercentage()%)</h4>
 
-@if (errors.Count > 0)
+@if (uploadService.UploadErrors.Count > 0)
 {
     <section>
         <h4>There were some errors trying to upload your video:</h4>
         <ul>
-            @foreach (var error in errors)
+            @foreach (var error in uploadService.UploadErrors)
             {
                 <li><p class="alert-danger">@error</p></li>
             }
@@ -29,87 +29,30 @@
 }
 
 @code {
-    private void OnFileChanged(InputFileChangeEventArgs fileChange)
+    private void OnUploadProgress(long currentUploadedBytes)
     {
-        ResetUploadState();
-        videoFileToUpload = fileChange.File;
-    }
-
-    private async Task UploadVideoAsync()
-    {
-        ResetUploadState();
-
-        if (videoFileToUpload is null) return;
-
-        if (videoFileToUpload.Size > FileSizeLimitInBytes)
-        {
-            var videoFileInMb = videoFileToUpload.Size / (float)MB;
-            errors.Add($"Attempted to upload a video of size {videoFileInMb.ToString("N2")}MB however, only videos smaller than {uploadOptions.CurrentValue.FileSizeLimitInMB}MB are allowed.");
-            return;
-        }
-
-        if (!IsVideoMimeType(videoFileToUpload.ContentType))
-        {
-            errors.Add($"Attempted to upload a non-video file, only video files are allowed.");
-            return;
-        }
-
-        try
-        {
-            await TryToUploadRawVideoFromUserAsync();
-        }
-        catch (Exception ex)
-        {
-            // FIXME: Catch specific exceptions and report human readable error messages
-            errors.Add(ex.Message);
-        }
-    }
-
-    private void ResetUploadState()
-    {
-        errors.Clear();
-        NumberOfUploadedByte = 0;
-    }
-
-    private static bool IsVideoMimeType(string mimeType)
-    {
-        return mimeType.StartsWith("video/"); 
-    }
-
-    private async Task TryToUploadRawVideoFromUserAsync()
-    {
-        // FIXME: Allow a user to cancel an upload using cancellation tokens
-        // FIXME: Implement a replica set for our mongodb database so we can use transactions
-        var videoId = await dbService.UploadRawVideoAsync(videoFileToUpload!,
-            (numberOfUploadedBytes) => NumberOfUploadedByte = numberOfUploadedBytes);
-
-        await dbService.AddVideoMetadataAsync(videoId);
+        NumberOfUploadedBytes = currentUploadedBytes;
     }
 
     private string GetMbRemainingToUpload()
     {
-        var diffInBytes = VideoFileSize - NumberOfUploadedByte;
-        var mbRemaining = diffInBytes / (float)MB;
+        const float MB = 1024 * 1024;
+        var diffInBytes = uploadService.VideoFileSize - NumberOfUploadedBytes;
+        var mbRemaining = diffInBytes / MB;
         return mbRemaining.ToString("N2");
     }
 
     private string GetCurrentVideoUploadPercentage()
     {
-        if (VideoFileSize == 0) return "0.00";
+        if (uploadService.VideoFileSize == 0) return "0.00";
 
-        var currentCompleted = NumberOfUploadedByte / (float)VideoFileSize;
+        var currentCompleted = NumberOfUploadedBytes / (float)uploadService.VideoFileSize;
         var uploadPercentage = currentCompleted * 100;
         return uploadPercentage.ToString("N2");
     }
 
-    const int MB = 1024 * 1024;
-    private int FileSizeLimitInBytes => uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
-
-    private IBrowserFile? videoFileToUpload;
-    private List<string> errors = [];
-
     private long _numberOfUploadedBytes = 0;
-    private long NumberOfUploadedByte
+    private long NumberOfUploadedBytes
     {
         get => _numberOfUploadedBytes;
         set
@@ -117,9 +60,5 @@
             _numberOfUploadedBytes = value;
             StateHasChanged();
         }
-    }
-    private long VideoFileSize
-    {
-        get => videoFileToUpload?.Size ?? 0;
     }
 }
