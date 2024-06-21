@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace SharpVids.Services;
 
+/// <inheritdoc cref="IUploadService"/>
 public sealed class UploadService : IUploadService
 {
     public UploadService(IValidator<IBrowserFile> fileValidator, IRawVideoDbService dbService)
@@ -11,12 +12,14 @@ public sealed class UploadService : IUploadService
         _dbService = dbService;
     }
 
+    /// <inheritdoc/>
     public void OnFileChanged(InputFileChangeEventArgs args)
     {
         ResetUploadState();
         _fileToUpload = args.File;
     }
 
+    /// <inheritdoc/>
     public async Task TryToUploadVideoAsync(Action<long> uploadCallback)
     {
         ResetUploadState();
