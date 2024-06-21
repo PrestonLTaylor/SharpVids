@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.Extensions.Options;
-using SharpVids.Options;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace SharpVids.Services;
 
 public sealed class UploadService : IUploadService
 {
-    public UploadService(IOptionsMonitor<UploadOptions> uploadOptions, IRawVideoDbService dbService)
+    public UploadService(IValidator<IBrowserFile> fileValidator, IRawVideoDbService dbService)
     {
-        _uploadOptions = uploadOptions;
+        _fileValidator = fileValidator;
         _dbService = dbService;
     }
 
@@ -24,17 +23,14 @@ public sealed class UploadService : IUploadService
 
         if (_fileToUpload is null) return;
 
-        var fileSizeLimitInBytes = _uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
-        if (_fileToUpload.Size > fileSizeLimitInBytes)
+        var validationResult = _fileValidator.Validate(_fileToUpload);
+        if (!validationResult.IsValid)
         {
-            var videoFileInMb = _fileToUpload.Size / (float)MB;
-            _uploadErrors.Add($"Attempted to upload a video of size {videoFileInMb:N2}MB however, only videos smaller than {_uploadOptions.CurrentValue.FileSizeLimitInMB}MB are allowed.");
-            return;
-        }
+            _uploadErrors = validationResult
+                .Errors
+                .Select(x => x.ErrorMessage)
+                .ToList();
 
-        if (!IsVideoMimeType(_fileToUpload.ContentType))
-        {
-            _uploadErrors.Add($"Attempted to upload a non-video file, only video files are allowed.");
             return;
         }
 
@@ -54,11 +50,6 @@ public sealed class UploadService : IUploadService
         _uploadErrors.Clear();
     }
 
-    private static bool IsVideoMimeType(string mimeType)
-    {
-        return mimeType.StartsWith("video/");
-    }
-
     private async Task TryToUploadRawVideoFromUserAsync(Action<long> uploadCallback)
     {
         // FIXME: Allow a user to cancel an upload using cancellation tokens
@@ -70,12 +61,10 @@ public sealed class UploadService : IUploadService
 
     public long VideoFileSize { get => _fileToUpload?.Size ?? 0; }
 
-    private readonly List<string> _uploadErrors = [];
+    private List<string> _uploadErrors = [];
     public IReadOnlyList<string> UploadErrors { get => _uploadErrors; }
 
-    private const int MB = 1024 * 1024;
-
-    private readonly IOptionsMonitor<UploadOptions> _uploadOptions;
+    private readonly IValidator<IBrowserFile> _fileValidator;
     private readonly IRawVideoDbService _dbService;
     private IBrowserFile? _fileToUpload;
 }

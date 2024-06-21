@@ -1,4 +1,6 @@
-﻿namespace SharpVids.Services;
+﻿using FluentValidation;
+
+namespace SharpVids.Services;
 
 public static class Installer
 {
@@ -7,6 +9,8 @@ public static class Installer
         services.AddTransient<IRawVideoDbService, RawVideoDbService>();
 
         services.AddTransient<IUploadService, UploadService>();
+
+        services.AddValidatorsFromAssembly(typeof(Installer).Assembly);
 
         return services;
     }
