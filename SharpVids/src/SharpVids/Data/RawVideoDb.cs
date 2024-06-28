@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 
 namespace SharpVids.Data;
 
@@ -8,7 +9,26 @@ public sealed class RawVideoDb : IRawVideoDb
     public RawVideoDb(ILogger<RawVideoDb> logger, IConfiguration configuration)
     {
         _logger = logger;
-        Client = TryToConnectToRawVideoDb(configuration);
+        _client = TryToConnectToRawVideoDb(configuration);
+    }
+
+    /// <inheritdoc />
+    public IMongoCollection<T> GetCollection<T>(string dbName, string collectionName)
+    {
+        var db = GetDatabase(dbName);
+        return db.GetCollection<T>(collectionName);
+    }
+
+    /// <inheritdoc />
+    public IGridFSBucket GetBucketFromDb(string dbName)
+    {
+        var db = GetDatabase(dbName);
+        return new GridFSBucket(db);
+    }
+
+    private IMongoDatabase GetDatabase(string dbName)
+    {
+        return _client.GetDatabase(dbName);
     }
 
     private MongoClient TryToConnectToRawVideoDb(IConfiguration configuration)
@@ -28,6 +48,7 @@ public sealed class RawVideoDb : IRawVideoDb
 
     private string TryToGetRawVideoDbConnectionString(IConfiguration configuration)
     {
+        const string RAW_VIDEO_DB_CONNECTION_STRING_NAME = "raw-video-db";
         var connectionString = configuration.GetConnectionString(RAW_VIDEO_DB_CONNECTION_STRING_NAME);
         if (connectionString is null)
         {
@@ -39,11 +60,8 @@ public sealed class RawVideoDb : IRawVideoDb
         return connectionString;
     }
 
-    public IMongoClient Client { get; }
-
-    const string RAW_VIDEO_DB_CONNECTION_STRING_NAME = "raw-video-db";
-
     private readonly ILogger<RawVideoDb> _logger;
+    private readonly MongoClientBase _client;
 }
 
 public static class RawVideoDbInstaller
