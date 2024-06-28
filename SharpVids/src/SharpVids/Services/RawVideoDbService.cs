@@ -14,7 +14,7 @@ namespace SharpVids.Services;
 /// </summary>
 public sealed class RawVideoDbService : IRawVideoDbService
 {
-    public RawVideoDbService(RawVideoDb dbClient, ILogger<RawVideoDbService> logger, IOptionsMonitor<UploadOptions> uploadOptions)
+    public RawVideoDbService(IRawVideoDb dbClient, ILogger<RawVideoDbService> logger, IOptionsMonitor<UploadOptions> uploadOptions)
     {
         _dbClient = dbClient;
         _logger = logger;
@@ -83,7 +83,7 @@ public sealed class RawVideoDbService : IRawVideoDbService
 
     private int FileSizeLimitInBytes => _uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
 
-    private readonly RawVideoDb _dbClient;
+    private readonly IRawVideoDb _dbClient;
     private readonly ILogger<RawVideoDbService> _logger;
     private readonly IOptionsMonitor<UploadOptions> _uploadOptions;
 }
