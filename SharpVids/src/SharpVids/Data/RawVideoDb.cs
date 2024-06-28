@@ -2,10 +2,8 @@
 
 namespace SharpVids.Data;
 
-/// <summary>
-/// A wrapper for connecting to our MongoDB service to be used as a raw video database.
-/// </summary>
-public sealed class RawVideoDb
+/// <inheritdoc cref="IRawVideoDb"/>
+public sealed class RawVideoDb : IRawVideoDb
 {
     public RawVideoDb(ILogger<RawVideoDb> logger, IConfiguration configuration)
     {
@@ -41,7 +39,7 @@ public sealed class RawVideoDb
         return connectionString;
     }
 
-    public MongoClient Client { get; }
+    public IMongoClient Client { get; }
 
     const string RAW_VIDEO_DB_CONNECTION_STRING_NAME = "raw-video-db";
 
@@ -52,7 +50,7 @@ public static class RawVideoDbInstaller
 {
     public static IServiceCollection AddRawVideoDb(this IServiceCollection services)
     {
-        services.AddTransient<RawVideoDb>();
+        services.AddTransient<IRawVideoDb, RawVideoDb>();
 
         return services;
     }
