@@ -11,4 +11,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build docker image
-      run: docker build . -f "SharpVids/SharpVids/Dockerfile"
+      run: docker build . -f "SharpVids/src/SharpVids/Dockerfile"
