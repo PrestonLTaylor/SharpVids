@@ -58,25 +58,18 @@ public sealed class RawVideoDbService : IRawVideoDbService
         await collection.InsertOneAsync(metadata);
     }
 
+    private IGridFSBucket GetRawVideosBucket()
+    {
+        return _dbClient.GetBucketFromDb(RAW_VIDEO_DB_NAME);
+    }
+
     private IMongoCollection<RawVideoMetadataModel> GetRawVideoMetadataCollection()
     {
-        var db = GetRawVideoDatabase();
-        return db.GetCollection<RawVideoMetadataModel>(RAW_VIDEO_METADATA_COLLECTION_NAME);
-    }
-
-    private GridFSBucket GetRawVideosBucket()
-    {
-        var db = GetRawVideoDatabase();
-        return new GridFSBucket(db);
-    }
-
-    private IMongoDatabase GetRawVideoDatabase()
-    {
-        return _dbClient.Client.GetDatabase(RAW_VIDEO_DB_NAME);
+        const string RAW_VIDEO_METADATA_COLLECTION_NAME = "raw-video-metadata";
+        return _dbClient.GetCollection<RawVideoMetadataModel>(RAW_VIDEO_DB_NAME, RAW_VIDEO_METADATA_COLLECTION_NAME);
     }
 
     const string RAW_VIDEO_DB_NAME = "raw-videos";
-    const string RAW_VIDEO_METADATA_COLLECTION_NAME = "raw-video-metadata";
     const int KB = 1024;
     const int MB = 1024 * 1024;
     const int UPLOAD_BUFFER_SIZE = 80 * KB;
