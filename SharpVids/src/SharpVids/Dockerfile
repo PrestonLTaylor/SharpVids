@@ -6,11 +6,11 @@ EXPOSE 5001
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["SharpVids/SharpVids/SharpVids.csproj", "SharpVids/SharpVids/"]
-COPY ["SharpVids/SharpVids.Client/SharpVids.Client.csproj", "SharpVids/SharpVids.Client/"]
-RUN dotnet restore "./SharpVids/SharpVids/SharpVids.csproj"
+COPY ["SharpVids/src/SharpVids/SharpVids.csproj", "SharpVids/src/SharpVids/"]
+COPY ["SharpVids/src/SharpVids.Client/SharpVids.Client.csproj", "SharpVids/src/SharpVids.Client/"]
+RUN dotnet restore "./SharpVids/src/SharpVids/SharpVids.csproj"
 COPY . .
-WORKDIR "/src/SharpVids/SharpVids"
+WORKDIR "SharpVids/src/SharpVids"
 RUN dotnet build "./SharpVids.csproj" -c Release -o /app/build
 
 FROM build AS publish

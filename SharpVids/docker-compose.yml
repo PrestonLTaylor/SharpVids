@@ -6,7 +6,7 @@ services:
     image: sharpvids-front-end
     build:
       context: ../.
-      dockerfile: SharpVids/SharpVids/Dockerfile
+      dockerfile: SharpVids/src/SharpVids/Dockerfile
     ports:
       - 5000:5000
       - 5001:5001
