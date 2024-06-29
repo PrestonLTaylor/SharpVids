@@ -9,12 +9,10 @@ using SharpVids.Models;
 
 namespace SharpVids.Services;
 
-/// <summary>
-/// Handles operations between the front-end and the MongoDB service (such as uploading raw videos and creating metadata).
-/// </summary>
-public sealed class RawVideoDbService : IRawVideoDbService
+/// <inheritdoc cref="IRawVideoRepository" />
+public sealed class RawVideoRepository : IRawVideoRepository
 {
-    public RawVideoDbService(IRawVideoDb dbClient, ILogger<RawVideoDbService> logger, IOptionsMonitor<UploadOptions> uploadOptions)
+    public RawVideoRepository(IRawVideoDb dbClient, ILogger<RawVideoRepository> logger, IOptionsMonitor<UploadOptions> uploadOptions)
     {
         _dbClient = dbClient;
         _logger = logger;
@@ -77,6 +75,6 @@ public sealed class RawVideoDbService : IRawVideoDbService
     private int FileSizeLimitInBytes => _uploadOptions.CurrentValue.FileSizeLimitInMB * MB;
 
     private readonly IRawVideoDb _dbClient;
-    private readonly ILogger<RawVideoDbService> _logger;
+    private readonly ILogger<RawVideoRepository> _logger;
     private readonly IOptionsMonitor<UploadOptions> _uploadOptions;
 }

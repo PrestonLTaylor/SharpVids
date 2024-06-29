@@ -3,7 +3,10 @@ using MongoDB.Bson;
 
 namespace SharpVids.Services;
 
-public interface IRawVideoDbService
+/// <summary>
+/// Handles persistance for raw videos uploaded by a user.
+/// </summary>
+public interface IRawVideoRepository
 {
     /// <summary>
     /// Uploads a raw video to our raw video database.

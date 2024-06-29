@@ -14,11 +14,11 @@ using SharpVids.Services;
 
 namespace SharpVids.Tests.Unit;
 
-public sealed class RawVideoDbServiceTests
+public sealed class RawVideoRepositoryTests
 {
-    public RawVideoDbServiceTests()
+    public RawVideoRepositoryTests()
     {
-        _sut = new(_db, NullLogger<RawVideoDbService>.Instance, _options);
+        _sut = new(_db, NullLogger<RawVideoRepository>.Instance, _options);
 
         // Setup default behaviour for our tests
         _db.GetBucketFromDb(EXPECTED_DB_NAME)
@@ -135,7 +135,7 @@ public sealed class RawVideoDbServiceTests
     const long DEFAULT_CHUNK_SIZE = 80 * 1024;
     const int DEFAULT_FILE_SIZE_LIMIT_IN_MB = 10;
 
-    private readonly RawVideoDbService _sut;
+    private readonly RawVideoRepository _sut;
 
     private readonly IRawVideoDb _db = Substitute.For<IRawVideoDb>();
     private readonly IGridFSBucket _videoBucket = Substitute.For<IGridFSBucket>();

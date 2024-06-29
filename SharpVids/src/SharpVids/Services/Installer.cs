@@ -6,7 +6,7 @@ public static class Installer
 {
     public static IServiceCollection AddSharpVidsServices(this IServiceCollection services)
     {
-        services.AddTransient<IRawVideoDbService, RawVideoDbService>();
+        services.AddTransient<IRawVideoRepository, RawVideoRepository>();
 
         services.AddTransient<IUploadService, UploadService>();
 
