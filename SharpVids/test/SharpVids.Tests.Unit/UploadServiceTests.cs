@@ -13,7 +13,7 @@ public sealed class UploadServiceTests
 {
     public UploadServiceTests()
     {
-        _sut = new(_validator, _dbService);
+        _sut = new(_validator, _rawVideoRepository);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class UploadServiceTests
         _validator.ReceivedCalls()
             .Should().BeEmpty();
 
-        _dbService.ReceivedCalls()
+        _rawVideoRepository.ReceivedCalls()
             .Should().BeEmpty();
 
         _sut.UploadErrors
@@ -49,7 +49,7 @@ public sealed class UploadServiceTests
         // Assert
         AssertValidationWasCalled();
 
-        _dbService.ReceivedCalls()
+        _rawVideoRepository.ReceivedCalls()
             .Should().BeEmpty();
     }
 
@@ -82,7 +82,7 @@ public sealed class UploadServiceTests
 
         SetUploadFile();
 
-        _dbService.UploadRawVideoAsync(_uploadFile, Arg.Any<Action<long>>())
+        _rawVideoRepository.UploadRawVideoAsync(_uploadFile, Arg.Any<Action<long>>())
             .ThrowsAsync(new Exception(EXPECTED_ERROR_MESSAGE));
 
         // Act
@@ -105,7 +105,7 @@ public sealed class UploadServiceTests
 
         SetUploadFile();
 
-        _dbService.AddVideoMetadataAsync(Arg.Any<ObjectId>())
+        _rawVideoRepository.AddVideoMetadataAsync(Arg.Any<ObjectId>())
             .ThrowsAsync(new Exception(EXPECTED_ERROR_MESSAGE));
 
         // Act
@@ -148,7 +148,7 @@ public sealed class UploadServiceTests
         await _sut.TryToUploadVideoAsync(action);
 
         // Assert
-        await _dbService.Received(1)
+        await _rawVideoRepository.Received(1)
             .UploadRawVideoAsync(_uploadFile, action);
     }
 
@@ -157,7 +157,7 @@ public sealed class UploadServiceTests
     {
         // Arrange
         var expectedObjectId = ObjectId.GenerateNewId();
-        _dbService.UploadRawVideoAsync(_uploadFile, Arg.Any<Action<long>>())
+        _rawVideoRepository.UploadRawVideoAsync(_uploadFile, Arg.Any<Action<long>>())
             .Returns(expectedObjectId);
 
         SetValidationResult([]);
@@ -168,7 +168,7 @@ public sealed class UploadServiceTests
         await _sut.TryToUploadVideoAsync(_ => { });
 
         // Assert
-        await _dbService.Received(1)
+        await _rawVideoRepository.Received(1)
             .AddVideoMetadataAsync(expectedObjectId);
     }
 
@@ -222,7 +222,7 @@ public sealed class UploadServiceTests
 
     private readonly IValidator<IBrowserFile> _validator = Substitute.For<IValidator<IBrowserFile>>();
 
-    private readonly IRawVideoDbService _dbService = Substitute.For<IRawVideoDbService>();
+    private readonly IRawVideoRepository _rawVideoRepository = Substitute.For<IRawVideoRepository>();
 
     private readonly IBrowserFile _uploadFile = Substitute.For<IBrowserFile>();
 }

@@ -6,10 +6,10 @@ namespace SharpVids.Services;
 /// <inheritdoc cref="IUploadService"/>
 public sealed class UploadService : IUploadService
 {
-    public UploadService(IValidator<IBrowserFile> fileValidator, IRawVideoDbService dbService)
+    public UploadService(IValidator<IBrowserFile> fileValidator, IRawVideoRepository repo)
     {
         _fileValidator = fileValidator;
-        _dbService = dbService;
+        _repo = repo;
     }
 
     /// <inheritdoc/>
@@ -57,9 +57,9 @@ public sealed class UploadService : IUploadService
     {
         // FIXME: Allow a user to cancel an upload using cancellation tokens
         // FIXME: Implement a replica set for our mongodb database so we can use transactions
-        var videoId = await _dbService.UploadRawVideoAsync(_fileToUpload!, uploadCallback);
+        var videoId = await _repo.UploadRawVideoAsync(_fileToUpload!, uploadCallback);
 
-        await _dbService.AddVideoMetadataAsync(videoId);
+        await _repo.AddVideoMetadataAsync(videoId);
     }
 
     public long VideoFileSize { get => _fileToUpload?.Size ?? 0; }
@@ -68,6 +68,6 @@ public sealed class UploadService : IUploadService
     public IReadOnlyList<string> UploadErrors { get => _uploadErrors; }
 
     private readonly IValidator<IBrowserFile> _fileValidator;
-    private readonly IRawVideoDbService _dbService;
+    private readonly IRawVideoRepository _repo;
     private IBrowserFile? _fileToUpload;
 }
